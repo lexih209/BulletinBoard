@@ -16,10 +16,18 @@ An interactive virtual event board
 - Committed the initial backend setup.
 
 ### Current Test Result
+### Backend Server Screenshot
 
+The initial Express backend successfully running at `http://localhost:3000`.
 The backend successfully displays:
 
 `BulletinBoard backend is running!`
+<img width="1917" height="1078" alt="image" src="https://github.com/user-attachments/assets/5a60d7b5-ea77-4fa3-9111-6c26979aa443" />
+
+### Backend Server Screenshot
+
+
+
 
 ### Next Steps
 
