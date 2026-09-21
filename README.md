@@ -1,6 +1,5 @@
 # BulletinBoard
 An interactive virtual event board
-
 ## Backend Progress
 
 ### September 15, 2026
