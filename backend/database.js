@@ -1,6 +1,6 @@
-const Database = require("better-sqlite3");
+const { DatabaseSync } = require("node:sqlite");
 
-const db = new Database("bulletinboard.db");
+const db = new DatabaseSync("bulletinboard.db");
 
 db.exec(`
     CREATE TABLE IF NOT EXISTS users (
