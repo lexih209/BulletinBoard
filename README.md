@@ -25,9 +25,6 @@ The backend successfully displays:
 
 ### Backend Server Screenshot
 
-
-
-
 ### Next Steps
 
 - Set up the database.
@@ -62,3 +59,22 @@ The backend currently supports:
 - Add route to retrieve all flyers.
 - Add flyer update and delete routes.
 - Connect frontend components to the backend API.
+## Backend Progress - September 29, 2026
+
+- Added consistent SQLite database path using `__dirname`.
+- Enabled SQLite foreign key enforcement.
+- Added flyer creation with `POST /flyers`.
+- Added retrieval of all flyers with `GET /flyers`.
+- Added retrieval of a single flyer with `GET /flyers/:id`.
+- Tested flyer creation and retrieval successfully using PowerShell.
+
+### Current Backend Features
+
+- User registration
+- User login
+- Password hashing with bcrypt
+- SQLite database storage
+- Create flyer
+- View all flyers
+- View flyer details
+

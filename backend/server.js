@@ -86,6 +86,97 @@ app.post("/login", async (req, res) => {
     }
 });
 
+app.post("/flyers", (req, res) => {
+    const {
+        title,
+        description,
+        category,
+        event_date,
+        image_url,
+        created_by
+    } = req.body;
+
+    if (!title || !created_by) {
+        return res.status(400).json({
+            message: "Title and created_by are required."
+        });
+    }
+
+    try {
+        const statement = db.prepare(`
+            INSERT INTO flyers (
+                title,
+                description,
+                category,
+                event_date,
+                image_url,
+                created_by
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+        `);
+
+        const result = statement.run(
+            title,
+            description || null,
+            category || null,
+            event_date || null,
+            image_url || null,
+            created_by
+        );
+
+        res.status(201).json({
+            message: "Flyer created successfully.",
+            flyerId: result.lastInsertRowid
+        });
+
+    } catch (error) {
+        res.status(400).json({
+            message: "Unable to create flyer.",
+            error: error.message
+        });
+    }
+});
+
+app.get("/flyers", (req, res) => {
+    try {
+        const flyers = db
+            .prepare("SELECT * FROM flyers ORDER BY id DESC")
+            .all();
+
+        res.status(200).json(flyers);
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Unable to retrieve flyers.",
+            error: error.message
+        });
+    }
+});
+
+app.get("/flyers/:id", (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const flyer = db
+            .prepare("SELECT * FROM flyers WHERE id = ?")
+            .get(id);
+
+        if (!flyer) {
+            return res.status(404).json({
+                message: "Flyer not found."
+            });
+        }
+
+        res.status(200).json(flyer);
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Unable to retrieve flyer.",
+            error: error.message
+        });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });

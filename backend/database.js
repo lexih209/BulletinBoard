@@ -1,6 +1,10 @@
 const { DatabaseSync } = require("node:sqlite");
+const path = require("path");
 
-const db = new DatabaseSync("bulletinboard.db");
+const dbPath = path.join(__dirname, "bulletinboard.db");
+const db = new DatabaseSync(dbPath);
+
+db.exec("PRAGMA foreign_keys = ON;");
 
 db.exec(`
     CREATE TABLE IF NOT EXISTS users (
