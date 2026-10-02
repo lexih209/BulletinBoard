@@ -10,21 +10,21 @@ function Welcome() {
   }
 
   return (
-    <main>
-      <h1>Campus Bulletin Board</h1>
+    <main style={{ textAlign: "center" }}>
+      <h1 className="board-title" style={{ fontSize: "80px" }}>Campus Bulletin Board</h1>
 
-      <form onSubmit={handleSubmit}>
-        <label>
+      <form onSubmit={handleSubmit} style={{ margin: "0 auto" }}>
+        <label className="board-title" style={{ fontSize: "40px" }}>
           Username
-          <input type="text" required />
         </label>
+        <input type="text" required />
 
-        <label>
+        <label className="board-title" style={{ fontSize: "40px" }}>
           Password
-          <input type="password" required />
         </label>
-
-        <button type="submit">Log In</button>
+          <input type="password" required />
+          
+        <button type="submit" style={{margin: "0 auto", padding: "14px 32px", fontSize: "20px", width: "180px"}}>Log In</button>
       </form>
     </main>
   );

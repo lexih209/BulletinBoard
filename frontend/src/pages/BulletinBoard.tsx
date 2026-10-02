@@ -17,10 +17,10 @@ const flyers = [
 
 function BulletinBoard() {
   return (
-    <main>
-      <h1>Bulletin Board</h1>
+    <main style={{ textAlign: "center" }}>
+      <h1 className="board-title" style={{ fontSize: "80px" }}>Campus Bulletin Board</h1>
 
-      <Link to="/upload">Upload Flyer</Link>
+      <Link to="/upload" style={{margin: "0 auto", padding: "14px 32px", fontSize: "20px", width: "220px"}}>Upload Flyer</Link>
 
       <section>
         {flyers.map((flyer) => (
