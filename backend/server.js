@@ -10,7 +10,7 @@ app.use(cors({
     origin: "http://localhost:5173"
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
 app.get("/", (req, res) => {
     res.send("BulletinBoard backend is running!");
