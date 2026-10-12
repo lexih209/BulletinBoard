@@ -2,15 +2,28 @@ const express = require("express");
 const db = require("./database");
 const bcrypt = require("bcryptjs");
 const cors = require("cors");
+const session = require("express-session");
 
 const app = express();
 const PORT = 3000;
 
 app.use(cors({
-    origin: "http://localhost:5173"
+  origin: "http://localhost:5173",
+  credentials: true
 }));
 
 app.use(express.json());
+app.use(session({
+  secret: process.env.SESSION_SECRET || "cork-bored-local-development-only",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 1000
+  }
+}));
 
 app.get("/", (req, res) => {
     res.send("BulletinBoard backend is running!");
@@ -39,11 +52,18 @@ app.post("/register", async (req, res) => {
             message: "User registered successfully.",
             userId: result.lastInsertRowid
         });
+        
     } catch (error) {
-        res.status(400).json({
-            message: "Unable to register user.",
-            error: error.message
-        });
+        if (error.message.includes("UNIQUE constraint failed")) {
+    return res.status(409).json({
+        message: "Username or email already exists."
+    });
+}
+
+res.status(500).json({
+    message: "Unable to register user.",
+    error: error.message
+});
     }
 });
 
@@ -78,11 +98,31 @@ app.post("/login", async (req, res) => {
             });
         }
 
-        res.status(200).json({
-            message: "Login successful.",
-            userId: user.id,
-            username: user.username
-        });
+       
+// Record the authenticated user's ID in the server-side session.
+req.session.regenerate((error) => {
+  if (error) {
+    return res.status(500).json({
+      message: "Unable to start login session."
+    });
+  }
+
+  req.session.userId = user.id;
+
+  req.session.save((saveError) => {
+    if (saveError) {
+      return res.status(500).json({
+        message: "Unable to save login session."
+      });
+    }
+
+    res.status(200).json({
+      message: "Login successful.",
+      userId: user.id,
+      username: user.username
+    });
+  });
+});
     } catch (error) {
         res.status(500).json({
             message: "Unable to log in.",
@@ -98,15 +138,28 @@ app.post("/flyers", (req, res) => {
         description,
         category,
         event_date,
+        location,
         image_url,
         created_by
     } = req.body;
 
-    if (!title || !created_by) {
-        return res.status(400).json({
-            message: "Title and created_by are required."
-        });
-    }
+    if (!title || title.trim() === "") {
+    return res.status(400).json({
+        message: "Title is required."
+    });
+}
+
+if (!created_by) {
+    return res.status(400).json({
+        message: "created_by is required."
+    });
+}
+
+if (category && typeof category !== "string") {
+    return res.status(400).json({
+        message: "Category must be text."
+    });
+}
 
     try {
         const statement = db.prepare(`
@@ -115,10 +168,11 @@ app.post("/flyers", (req, res) => {
                 description,
                 category,
                 event_date,
+                location,
                 image_url,
                 created_by
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `);
 
         const result = statement.run(
@@ -126,6 +180,7 @@ app.post("/flyers", (req, res) => {
             description || null,
             category || null,
             event_date || null,
+            location || null,
             image_url || null,
             created_by
         );
@@ -206,6 +261,7 @@ app.put("/flyers/:id", (req, res) => {
         description,
         category,
         event_date,
+        location,
         image_url,
         user_id
     } = req.body;
@@ -233,6 +289,7 @@ app.put("/flyers/:id", (req, res) => {
                 description = ?,
                 category = ?,
                 event_date = ?,
+                location = ?,
                 image_url = ?
             WHERE id = ?
         `);
@@ -242,6 +299,7 @@ app.put("/flyers/:id", (req, res) => {
             description ?? existingFlyer.description,
             category ?? existingFlyer.category,
             event_date ?? existingFlyer.event_date,
+            location ?? existingFlyer.location,
             image_url ?? existingFlyer.image_url,
             id
         );

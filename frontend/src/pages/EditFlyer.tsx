@@ -1,0 +1,208 @@
+import { useEffect, useState } from "react";
+
+import { Link, useNavigate, useParams } from "react-router-dom";
+
+type Flyer = {
+  id: number;
+  title: string;
+  description: string | null;
+  category: string | null;
+  event_date: string | null;
+  location: string | null;
+  image_url: string | null;
+  created_by: number;
+};
+
+function EditFlyer() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("General");
+  const [eventDate, setEventDate] = useState("");
+  const [location, setLocation] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const storedUserId = sessionStorage.getItem("userId");
+  const currentUserId = storedUserId ? Number(storedUserId) : null;
+  const [flyerOwnerId, setFlyerOwnerId] = useState<number | null>(null);
+
+const isOwner =
+  currentUserId !== null &&
+  flyerOwnerId !== null &&
+  currentUserId === flyerOwnerId;
+
+  useEffect(() => {
+    async function loadFlyer() {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/flyers/${id}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Unable to load flyer.");
+        }
+
+        const flyer: Flyer = await response.json();
+        setFlyerOwnerId(flyer.created_by);
+
+        setTitle(flyer.title);
+        setDescription(flyer.description ?? "");
+        setCategory(flyer.category ?? "General");
+        setEventDate(flyer.event_date ?? "");
+        setLocation(flyer.location ?? "");
+        setImageUrl(flyer.image_url ?? "");
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Something went wrong."
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (id) {
+      loadFlyer();
+    } else {
+      setError("No flyer ID provided.");
+      setLoading(false);
+    }
+  }, [id]);
+
+async function saveFlyer(event: React.FormEvent<HTMLFormElement>) {
+  event.preventDefault();
+  setError("");
+
+  if (!id || currentUserId === null || !isOwner) {
+    setError("You must be the flyer owner to edit this flyer.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:3000/flyers/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        description,
+        category,
+        event_date: eventDate,
+        location,
+        image_url: imageUrl,
+        user_id: currentUserId,
+      }),
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      throw new Error(result.message || "Unable to update flyer.");
+    }
+
+    navigate(`/flyers/${id}`);
+  } catch (err) {
+    setError(
+      err instanceof Error ? err.message : "Something went wrong."
+    );
+  }
+}
+
+  return (
+    <main style={{ textAlign: "center" }}>
+      <h1>Edit Flyer</h1>
+
+      {loading ? (
+        <p>Loading flyer...</p>
+      ) : error ? (
+        <p role="alert" style={{ color: "red" }}>{error}</p>
+      ) : (
+        <form
+  onSubmit={saveFlyer}
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "15px",
+    maxWidth: "450px",
+    margin: "20px auto",
+  }}
+>
+  <label>
+    Flyer Title
+    <input
+      type="text"
+      value={title}
+      onChange={(event) => setTitle(event.target.value)}
+      required
+    />
+  </label>
+
+  <label>
+    Description
+    <textarea
+      value={description}
+      onChange={(event) => setDescription(event.target.value)}
+      required
+    />
+  </label>
+
+  <label>
+    Date
+    <input
+      type="date"
+      value={eventDate}
+      onChange={(event) => setEventDate(event.target.value)}
+      required
+    />
+  </label>
+
+  <label>
+    Location
+    <input
+      type="text"
+      value={location}
+      onChange={(event) => setLocation(event.target.value)}
+      required
+    />
+  </label>
+
+  <label>
+    Category
+    <select
+      value={category}
+      onChange={(event) => setCategory(event.target.value)}
+    >
+      <option value="General">General</option>
+      <option value="Academic">Academic</option>
+      <option value="Clubs">Clubs & Organizations</option>
+      <option value="Events">Campus Events</option>
+      <option value="Other">Other</option>
+    </select>
+  </label>
+
+  <label>
+    Image URL (optional)
+    <input
+      type="url"
+      value={imageUrl}
+      onChange={(event) => setImageUrl(event.target.value)}
+      placeholder="https://example.com/flyer.jpg"
+    />
+  </label>
+
+  <button type="submit">
+    Save Changes
+  </button>
+</form>
+      )}
+
+      <Link to={`/flyers/${id}`}>Back to Flyer Details</Link>
+    </main>
+  );
+}
+
+export default EditFlyer;
