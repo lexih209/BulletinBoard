@@ -3,7 +3,7 @@ An interactive virtual event board
 
 ## Project Overview
 
-Cork Bored is a digital campus bulletin board that allows students to discover events, share flyers, and manage their own postings through a corkboard-style interface.
+Bulletin Bored is a digital campus bulletin board that allows students to discover events, share flyers, and manage their own postings through a corkboard-style interface.
 
 ## Technologies Used
 
