@@ -7,6 +7,7 @@ function UploadFlyer() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [expirationDate, setExpirationDate] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("General");
@@ -18,26 +19,20 @@ function UploadFlyer() {
   event.preventDefault();
 
   setError("");
-
-  const storedUserId = sessionStorage.getItem("userId");
-  const userId = Number(storedUserId);
-
-  if (!storedUserId || !Number.isInteger(userId) || userId <= 0) {
-    setError("Please log in before uploading a flyer.");
-    return;
-  }
-
   setLoading(true);
 
   try {
+
 const formData = new FormData();
 
 formData.append("title", title);
 formData.append("description", description);
 formData.append("category", category);
 formData.append("event_date", eventDate);
+if (expirationDate) {
+formData.append("expiration_date", expirationDate);
+}
 formData.append("location", location);
-formData.append("created_by", String(userId));
 
 if (imageFile) {
   formData.append("image", imageFile);
@@ -45,8 +40,10 @@ if (imageFile) {
 
 const response = await fetch("http://localhost:3000/flyers", {
   method: "POST",
+  credentials: "include",
   body: formData,
 });
+
 
     const data = await response.json();
 
@@ -97,6 +94,16 @@ const response = await fetch("http://localhost:3000/flyers", {
             required
           />
         </label>
+
+      <label>
+         Expiration Date (Optional)
+          <input
+           type="date"
+            value={expirationDate}
+            onChange={(event) => setExpirationDate(event.target.value)}
+          />
+        </label>
+
 
         <label>
           Location

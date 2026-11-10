@@ -20,11 +20,27 @@ function BulletinBoard() {
   const [showPastFlyers, setShowPastFlyers] = useState(false);
   const username = sessionStorage.getItem("username");
 
-function handleLogout() {
-  sessionStorage.removeItem("userId");
-  sessionStorage.removeItem("username");
-  window.location.href = "/";
+
+async function handleLogout() {
+    try {
+        const response = await fetch("http://localhost:3000/logout", {
+            method: "POST",
+            credentials: "include",
+        });
+
+        if (!response.ok) {
+            throw new Error("Unable to log out.");
+        }
+
+        sessionStorage.removeItem("userId");
+        sessionStorage.removeItem("username");
+        window.location.href = "/";
+    } catch (error) {
+        console.error("Logout failed:", error);
+        window.alert("Logout failed. Please try again.");
+    }
 }
+
 
   useEffect(() => {
     async function fetchFlyers() {
@@ -98,26 +114,19 @@ const filteredFlyers = flyers.filter((flyer) => {
   }}
 >Campus Bulletin Board</h1>
 
-<div
-  style={{
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "15px",
-    marginBottom: "20px",
-  }}
->
+      {username && (
   <Link
     to="/upload"
     style={{
+      margin: "0 auto",
       padding: "14px 32px",
       fontSize: "20px",
-      width: "220px",
+      width: "220px"
     }}
   >
     Upload Flyer
   </Link>
+)}
 
   <button
     type="button"
@@ -130,7 +139,7 @@ const filteredFlyers = flyers.filter((flyer) => {
   >
     {showPastFlyers ? "Current Flyers" : "Past Flyers"}
   </button>
-</div>
+
 
       <label className="category-filter">
         Filter by category:
